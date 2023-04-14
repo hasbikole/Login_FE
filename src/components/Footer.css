@@ -1,0 +1,23 @@
+.footer {
+    background-color: #470c0c;
+    color: yellow;
+    padding: 20px;
+    bottom: 0;
+    width: 100%;
+    position: fixed;
+}
+
+
+#content-header img {
+    display: flex;
+    float: left;
+    margin:auto;
+}
+
+#footer-list {
+    float: right;
+}
+#footer-list a {
+    padding: 10px;
+    text-decoration: none;
+}

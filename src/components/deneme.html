@@ -1,0 +1,291 @@
+<div class="content-wrapper container-xxl p-0">
+  <app-content-header [contentHeader]="contentHeader"></app-content-header>
+  <div class="content-body">
+    <div class="bs-stepper checkout-tab-steps" id="checkoutStepper">
+      <!-- Wizard starts -->
+      <div class="bs-stepper-header">
+        <div class="step" data-target="#step-cart">
+          <button type="button" class="step-trigger">
+            <span class="bs-stepper-box">
+              <i data-feather="shopping-cart" class="font-medium-3"></i>
+            </span>
+            <span class="bs-stepper-label">
+              <span class="bs-stepper-title">Sepet</span>
+              <span class="bs-stepper-subtitle">Sepet İçeriğiniz</span>
+            </span>
+          </button>
+        </div>
+        <div class="line">
+          <i data-feather="chevron-right" class="font-medium-2"></i>
+        </div>
+        <div class="step" data-target="#step-address">
+          <button [disabled]="products.length == 0" type="button" class="step-trigger">
+            <span class="bs-stepper-box">
+              <i data-feather="home" class="font-medium-3"></i>
+            </span>
+            <span class="bs-stepper-label">
+              <span class="bs-stepper-title">Adres</span>
+              <span class="bs-stepper-subtitle">Adresinizi Seçin</span>
+            </span>
+          </button>
+        </div>
+        <div class="line">
+          <i data-feather="chevron-right" class="font-medium-2"></i>
+        </div>
+        <div class="step" data-target="#step-payment">
+          <button [disabled]="selectedAddress == undefined || products.length == 0" type="button" class="step-trigger">
+            <span class="bs-stepper-box">
+              <i data-feather="credit-card" class="font-medium-3"></i>
+            </span>
+            <span class="bs-stepper-label">
+              <span class="bs-stepper-title">Ödeme</span>
+              <span class="bs-stepper-subtitle">Ödeme Yönteminizi belirleyin</span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <!-- Wizard ends -->
+
+      <div class="bs-stepper-content">
+        <!-- Checkout Place order starts -->
+        <div id="step-cart" class="content">
+          <div id="place-order" class="list-view product-checkout">
+            <!-- Checkout Place Order Left starts -->
+            <div class="checkout-items">
+              <ng-container *ngFor="let product of products">
+                <app-product-checkout-item [product]="product"> </app-product-checkout-item>
+              </ng-container>
+            </div>
+            <!-- Checkout Place Order Left ends -->
+
+            <!-- Checkout Place Order Right starts -->
+            <div *ngIf="products.length > 0" class="checkout-options">
+              <div class="card">
+                <div class="card-body">
+                  <div class="price-details">
+                    <h6 class="price-title">Sipariş Detay</h6>
+                    <ul class="list-unstyled">
+                      <li class="price-detail">
+                        <div class="detail-title">Ara Toplam</div>
+                        <div class="detail-amt">{{checkoutPrice}} ₺</div>
+                      </li>
+
+                      <li class="price-detail">
+                        <div class="detail-title">KDV Tutarı</div>
+                        <div class="detail-amt">{{taxPrice}} ₺</div>
+                      </li>
+
+                      <li class="price-detail">
+                        <div class="detail-title">Kargo Ücreti</div>
+                        <div *ngIf="basketPrice >= cargoLimit" class="detail-amt discount-amt text-success">{{cargoUpperPrice}} ₺</div>
+                        <div *ngIf="basketPrice < cargoLimit" class="detail-amt discount-amt">{{cargoPrice}} ₺</div>
+                      </li>
+                    </ul>
+                    <hr />
+                    <ul class="list-unstyled">
+                      <li *ngIf="priceToPercentileLimitDiscount>0" class="price-detail">
+                        <div class="detail-title detail-total">İndirim 1</div>
+                        <div class="detail-amt discount-amt text-success">- {{priceToPercentileLimitDiscount}} ₺</div>
+                      </li>
+
+                      <li *ngIf="buyPayDiscount>0" class="price-detail">
+                        <div class="detail-title detail-total">İndirim 2</div>
+                        <div class="detail-amt discount-amt text-success">- {{buyPayDiscount}} ₺</div>
+                      </li>
+
+                      <li *ngIf="productDiscountDiscount>0" class="price-detail">
+                        <div class="detail-title detail-total">İndirim 3</div>
+                        <div class="detail-amt discount-amt text-success">- {{productDiscountDiscount}} ₺</div>
+                      </li>
+
+                      <li class="price-detail">
+                        <div class="detail-title detail-total">Toplam Puan</div>
+                        <div class="detail-amt font-weight-bolder">{{checkoutPoint}} Puan</div>
+                      </li>
+
+                      <li class="price-detail">
+                        <div class="detail-title detail-total">Toplam Tutar</div>
+                        <div *ngIf="basketPrice >= cargoLimit" class="detail-amt font-weight-bolder">{{basketPrice}} ₺</div>
+                        <div *ngIf="basketPrice < cargoLimit" class="detail-amt font-weight-bolder">{{basketPrice + cargoPrice}} ₺</div>
+                      </li>
+                    </ul>
+                    <button type="button" class="btn btn-primary btn-block btn-next place-order" (click)="nextStep()" rippleEffect>Sipariş Ver</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Checkout Place Order Right ends -->
+            </div>
+          </div>
+        </div>
+        <!-- Checkout Customer Address Starts -->
+        <div style="margin-top: 28px" id="step-address" class="content">
+          <!-- Checkout Customer Address Right starts -->
+          <div class="customer-card">
+            <div class="card col-sm-6" *ngFor="let address of addresses">
+              <div class="card-header">
+                <h4 class="card-title">{{address.first_name}} {{address.last_name}}</h4>
+              </div>
+              <div class="card-body actions">
+                <p class="card-text mb-1">{{address.address_title}}</p>
+                <p class="card-text">{{address.neighborhood}} {{address.street}} {{address.description}} {{address.district}}-{{address.city}}/{{address.country}}</p>
+
+                <button type="button" class="btn btn-primary btn-cart btn-next mt-2" (click)="adresDeneme(address)" rippleEffect>Adresi Seç</button>
+                <button style="margin-left: 20px" type="button" class="btn btn-primary btn-cart btn-next mt-2" (click)="updateAddress(address)" rippleEffect>Adresi Düzenle</button>
+              </div>
+            </div>
+
+            <div>
+              <button *ngIf="addresses.length == 0" style="margin-left: 20px" type="button" class="btn btn-primary btn-cart btn-next mt-2" (click)="createAddress()" rippleEffect>Adresi Ekle</button>
+            </div>
+          </div>
+          <!-- Checkout Customer Address Right ends -->
+        </div>
+        <!-- Checkout Customer Address Ends -->
+        <!-- Checkout Payment Starts -->
+        <div id="step-payment" class="content">
+          <div class="list-view product-checkout">
+            <div class="payment-type">
+              <div class="card">
+                <div class="card-header flex-column align-items-start">
+                  <div class="row col-md-12" style="margin-left: -28px">
+                    <div class="col-md-9">
+                      <h4 class="card-title">Ödeme Yöntemi</h4>
+                    </div>
+                    <div class="col-md-3">
+                      <h4>Prim Miktarı: {{premiumStatistic.user_remain_premium}}</h4>
+                    </div>
+                  </div>
+                  <p class="card-text text-muted mt-25">Ödeme bilgilerinizi girerek sipariş verebilirsiniz.</p>
+                </div>
+                <div class="card-body">
+                  <form class="validate-form mt-2" [formGroup]="paymentForm" (ngSubmit)="paymentTest()">
+                    <div class="row">
+                      <div class="col-12 col-sm-6">
+                        <div class="form-group">
+                          <label class="mb-50 mr-5" for="card_name">Kart Üzerindeki İsim:</label>
+                          <input type="text" id="card_name" class="form-control" placeholder="Kart İsmi" title="title" formControlName="card_name" [class.error]="!paymentForm.controls.card_name.valid" aria-label="John Doe" aria-describedby="title" required />
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-sm-6">
+                        <div class="form-group">
+                          <label class="mb-50 mr-5" for="card_number">Kart Numarası:</label>
+                          <input class="form-control" id="card_number" type="text" placeholder="Kart Numarası" mask="0000 0000 0000 0000" title="title" formControlName="card_number" [class.error]="!paymentForm.controls.card_number.valid" aria-label="John Doe" aria-describedby="title" required />
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-sm-6">
+                        <div class="form-group">
+                          <label class="mb-50 mr-3" for="card_expirationDate">Kart Geçerlilik Süresi:</label>
+                          <input class="form-control" id="card_expirationDate" type="text" placeholder="mm/yy" mask="00/00" title="title" formControlName="card_expirationDate" [class.error]="!paymentForm.controls.card_expirationDate.valid" aria-label="John Doe" aria-describedby="title" required />
+                        </div>
+                      </div>
+
+                      <div class="customer-cvv col-12 col-sm-6">
+                        <div class="form-group">
+                          <label class="mb-50 mr-5" for="card_cvv">Cvv Kodu:</label>
+                          <input type="password" class="form-control input-cvv" id="card_cvv" placeholder="Cvv Kodu" mask="000" title="title" formControlName="card_cvv" [class.error]="!paymentForm.controls.card_cvv.valid" aria-label="John Doe" aria-describedby="title" required />
+                        </div>
+                      </div>
+
+                      <hr class="my-2" />
+                      <div class="col-12">
+                        <button type="submit" [disabled]="(!paymentForm.valid || !contractValue)? true:false" class="btn btn-primary btn-cvv full-width" rippleEffect>Kredi Kartı ile Öde</button>
+                      </div>
+                    </div>
+                  </form>
+
+                  <hr class="my-2" />
+                  <form class="validate-form mt-2" [formGroup]="premiumForm" (ngSubmit)="paymentPremium()">
+                    <div class="col-12 col-sm-6">
+                      <div class="form-group">
+                        <label class="mb-50 mr-5" for="premium">Ödemek İstediğiniz Pirim Miktarı:</label>
+                        <input class="form-control" id="premium" type="text" placeholder="Prim Miktarı" mask="separator" title="title" formControlName="premium" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <button type="submit" [disabled]="(!paymentForm.valid || !premiumForm.valid || !contractValue)? true:false" class="btn btn-primary btn-cvv col-12 col-sm-6" rippleEffect>Prim İle Öde</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="amount-payable checkout-options">
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">Sipariş Detayı</h4>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled price-details">
+                    <li *ngFor="let productPrice of products" class="price-detail">
+                      <div class="details-title">{{productPrice.quantity}} x {{productPrice.product_name}}</div>
+                      <div class="detail-amt">
+                        <strong>{{productPrice.totalPrice}} ₺</strong>
+                      </div>
+                    </li>
+
+                    <li class="price-detail">
+                      <div class="detail-title">KDV Tutarı</div>
+                      <div class="detail-amt">{{taxPrice}} ₺</div>
+                    </li>
+
+                    <li class="price-detail">
+                      <div class="details-title">Kargo</div>
+                      <div *ngIf="checkoutPriceTax >= cargoLimit" class="detail-amt discount-amt text-success">{{cargoUpperPrice}} ₺</div>
+                      <div *ngIf="checkoutPriceTax < cargoLimit" class="detail-amt discount-amt">{{cargoPrice}} ₺</div>
+                    </li>
+                  </ul>
+                  <hr />
+                  <ul class="list-unstyled price-details">
+                    <li *ngIf="priceToPercentileLimitDiscount>0" class="price-detail">
+                      <div class="detail-title detail-total">İndirim 1</div>
+                      <div class="detail-amt discount-amt text-success">- {{priceToPercentileLimitDiscount}} ₺</div>
+                    </li>
+
+                    <li *ngIf="buyPayDiscount>0" class="price-detail">
+                      <div class="detail-title detail-total">İndirim 2</div>
+                      <div class="detail-amt discount-amt text-success">- {{buyPayDiscount}} ₺</div>
+                    </li>
+
+                    <li *ngIf="productDiscountDiscount>0" class="price-detail">
+                      <div class="detail-title detail-total">İndirim 3</div>
+                      <div class="detail-amt discount-amt text-success">- {{productDiscountDiscount}} ₺</div>
+                    </li>
+
+                    <li class="price-detail">
+                      <div class="details-title">Toplam Ücret</div>
+                      <div *ngIf="basketPrice >= cargoLimit" class="detail-amt font-weight-bolder">{{basketPrice}} ₺</div>
+                      <div *ngIf="basketPrice < cargoLimit" class="detail-amt font-weight-bolder">{{basketPrice + cargoPrice}} ₺</div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="custom-control custom-control-success custom-switch" style="margin-bottom: 10px">
+                <div class="row">
+                  <p style="margin-left: 15px">Sözleşmeler:</p>
+                  <a (click)="sozlesme()" style="cursor: pointer; margin-left: 15px">Mesafeli Satış Sözleşmesi </a>
+                </div>
+                <input [(ngModel)]="contractValue" type="checkbox" class="custom-control-input" id="sozlesme2" />
+                <label class="custom-control-label" for="sozlesme2">Sözleşmeyi Kabul Ediyorum</label>
+
+                <div *ngIf="!contractValue">Sözleşmeyi Onaylamanız Lazım</div>
+              </div>
+              <button [disabled]="!contractValue" (click)="paymentOnlyPremium()" class="btn btn-primary btn-cvv col-12 col-sm-12" rippleEffect>Hepsini Prim İle Öde</button>
+
+              <button [disabled]="!contractValue" (click)="BEFiyatTest()" class="btn btn-primary btn-cvv col-12 col-sm-12 mt-2" rippleEffect>Fiyat Hesapla</button>
+            </div>
+          </div>
+        </div>
+        <!-- Checkout Payment Ends -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<core-sidebar class="modal modal-slide-in sidebar-todo-modal fade" name="new-address-sidebar" overlayClass="modal-backdrop">
+  <app-new-address-sidebar></app-new-address-sidebar>
+</core-sidebar>
+
+<core-sidebar class="modal modal-slide-in sidebar-todo-modal fade" name="update-address-sidebar" overlayClass="modal-backdrop">
+  <app-update-address-sidebar></app-update-address-sidebar>
+</core-sidebar>
